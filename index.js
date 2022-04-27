@@ -77,9 +77,7 @@ async function addPersonToProject(personRecord, project) {
   const options = {
     headers: {
       Authorization: 'Bearer ' + process.env['AIRTABLE_SECRET'],
-      //   'Content-Type': 'application/json',
     },
-    //   body: JSON.stringify(data),
     responseType: 'json',
   };
 
