@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "axios": "^0.27.2",
     "dotenv": "^16.0.0",
     "got": "11.8.3"
   }

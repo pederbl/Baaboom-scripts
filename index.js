@@ -1,6 +1,7 @@
 // run `node index.js` in the terminal
 import 'dotenv/config';
 import got from 'got';
+import axios from 'axios';
 
 const PERSONS_TABLE_ID = 'tblQbFE3X5joGozyp';
 
@@ -23,14 +24,15 @@ async function main() {
 
   while (true) {
     const personRecord = await getNextPersonToAddToProject(project);
+    console.log(`Record id: ${personRecord?.id}`);
 
     if (!personRecord) {
-      console.log('Done');
       break;
     }
 
     await addPersonToProject(personRecord, project);
   }
+  throw new Error('DONE');
 }
 
 async function getNextPersonToAddToProject(project) {
@@ -38,19 +40,25 @@ async function getNextPersonToAddToProject(project) {
     headers: {
       Authorization: 'Bearer ' + process.env['AIRTABLE_SECRET'],
     },
-    searchParams: {
+    params: {
       view: project.addToProjectViewId,
       maxRecords: '1',
     },
-    responseType: 'json',
   };
   const endpoint = generateEndpoint(PERSONS_TABLE_ID);
 
-  const response = await got(endpoint, options).catch((err) => {
-    console.log(err.response.body);
-    throw err;
-  });
-  const records = response.body.records;
+  const response = await axios.get(endpoint, options);
+
+  if (response.status !== 200) {
+    console.log(response);
+    throw new Error('Not success');
+  }
+
+  const records = response.data.records;
+
+  if (records.length === 0) {
+    console.log(response);
+  }
 
   return records[0];
 }
@@ -69,32 +77,22 @@ async function addPersonToProject(personRecord, project) {
   const options = {
     headers: {
       Authorization: 'Bearer ' + process.env['AIRTABLE_SECRET'],
-      'Content-Type': 'application/json',
+      //   'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    //   body: JSON.stringify(data),
     responseType: 'json',
   };
 
   const endpoint = generateEndpoint(project.tabelId);
 
-  console.log(endpoint);
+  console.log(data);
 
-  const response = await got.post(endpoint, options).catch((err) => {
-    console.log(err.response.body);
-    throw err;
-  });
-  console.log(1);
+  const response = await axios.post(endpoint, data, options);
 
-  if (response.statusCode !== 200) throw new Error('Not success');
-
-  console.log(response);
-  throw new Error('Breakpoint!');
+  if (response.status !== 200) throw new Error('Not success');
+  console.log('Added');
 }
 
 (async () => {
-  try {
-    await main();
-  } catch (e) {
-    console.log(e);
-  }
+  await main();
 })();
